@@ -1,0 +1,17 @@
+.DS_Store
+
+# Xcode build output and local state
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcscmblueprint
+
+# LLVM / Swift coverage artifacts
+*.profraw
+*.profdata
+
+# Local assistant configuration
+.claude/
+CLAUDE.md
