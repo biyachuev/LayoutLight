@@ -41,17 +41,6 @@
                ReferencedContainer = "container:LayoutLight.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7EF4AEA72E55CC310040C356"
-               BuildableName = "LayoutLightUITests.xctest"
-               BlueprintName = "LayoutLightUITests"
-               ReferencedContainer = "container:LayoutLight.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

@@ -24,6 +24,8 @@ This is a personal macOS project published as source code. Prebuilt binaries are
 
 Open `LayoutLight.xcodeproj` in Xcode 16+ and build the `LayoutLight` scheme.
 
+LayoutLight currently requires macOS 15.5 or later.
+
 Command-line debug build:
 
 ```sh
@@ -36,7 +38,7 @@ Command-line release build:
 xcodebuild -project LayoutLight.xcodeproj -scheme LayoutLight -configuration Release build
 ```
 
-Tested on macOS 14 / 15 / 16 on Apple Silicon.
+Tested on Apple Silicon.
 
 Because the project is intended to be built locally, macOS may ask for Accessibility permission for your locally signed copy of the app.
 
