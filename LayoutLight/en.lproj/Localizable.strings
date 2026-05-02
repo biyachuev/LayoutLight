@@ -53,6 +53,8 @@
 "shortcuts.switchToRussian" = "Switch to Russian";
 "shortcuts.title" = "Keyboard Shortcuts";
 "shortcuts.warningTitle" = "Shortcut not saved";
+"common.disabled" = "Off";
+"common.enabled" = "On";
 "window.settingsTitle" = "LayoutLight Settings";
 "windowIndicator.edgeSide" = "Edge side";
 "windowIndicator.disabled" = "Off";
@@ -70,4 +72,5 @@
 "windowFrame.mode.frame" = "Frame";
 "settings.caret" = "Caret";
 "settings.general" = "General";
+"settings.status" = "Status";
 "settings.window" = "Window";

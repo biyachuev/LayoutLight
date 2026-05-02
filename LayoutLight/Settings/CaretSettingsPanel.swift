@@ -4,6 +4,7 @@ struct CaretSettingsPanel: View {
     @ObservedObject var languageStore: InterfaceLanguageStore = .shared
     @ObservedObject var store: CaretSettingsStore = .shared
     @ObservedObject var languageIndicatorStore: LanguageIndicatorSettingsStore = .shared
+    @AppStorage(DefaultsKey.colorCaretByLanguage) private var isCaretIndicatorEnabled = false
     @Binding var previewLanguage: PreviewLanguage
     let russianPreviewText: String
 
@@ -59,6 +60,11 @@ struct CaretSettingsPanel: View {
 
     private var caretControlsCard: some View {
         settingsCard {
+            IndicatorStatusRow(isEnabled: isCaretIndicatorEnabled)
+
+            Divider()
+                .padding(.vertical, 2)
+
             typingControls
 
             Divider()

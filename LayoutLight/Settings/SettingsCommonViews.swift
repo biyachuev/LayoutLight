@@ -48,3 +48,33 @@ struct LanguageColorsCard: View {
         }
     }
 }
+
+struct IndicatorStatusRow: View {
+    let isEnabled: Bool
+
+    var body: some View {
+        HStack {
+            Text(I18n.t("settings.status"))
+                .font(.system(size: 13))
+                .frame(width: SettingsLayout.labelWidth, alignment: .leading)
+            IndicatorStatusPill(isEnabled: isEnabled)
+            Spacer()
+        }
+    }
+}
+
+private struct IndicatorStatusPill: View {
+    let isEnabled: Bool
+
+    var body: some View {
+        Text(isEnabled ? I18n.t("common.enabled") : I18n.t("common.disabled"))
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(isEnabled ? Color.accentColor : .secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(isEnabled ? Color.accentColor.opacity(0.12) : Color.secondary.opacity(0.10))
+            )
+    }
+}

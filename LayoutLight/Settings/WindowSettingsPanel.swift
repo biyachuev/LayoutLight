@@ -52,21 +52,7 @@ struct WindowSettingsPanel: View {
 
     private var windowFrameSettingsCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(I18n.t("windowIndicator.status"))
-                    .font(.system(size: 13))
-                    .frame(width: SettingsLayout.labelWidth, alignment: .leading)
-                Text(windowFrameStore.settings.isEnabled ? I18n.t("windowIndicator.enabled") : I18n.t("windowIndicator.disabled"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(windowFrameStore.settings.isEnabled ? Color.accentColor : .secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(windowFrameStore.settings.isEnabled ? Color.accentColor.opacity(0.12) : Color.secondary.opacity(0.10))
-                    )
-                Spacer()
-            }
+            IndicatorStatusRow(isEnabled: windowFrameStore.settings.isEnabled)
 
             Text(I18n.t("windowIndicator.note"))
                 .font(.system(size: 12))

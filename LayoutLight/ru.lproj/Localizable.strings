@@ -53,6 +53,8 @@
 "shortcuts.switchToRussian" = "Переключить на русский";
 "shortcuts.title" = "Сочетания клавиш";
 "shortcuts.warningTitle" = "Сочетание не сохранено";
+"common.disabled" = "Выключено";
+"common.enabled" = "Включено";
 "window.settingsTitle" = "Настройки LayoutLight";
 "windowIndicator.edgeSide" = "Сторона линии";
 "windowIndicator.disabled" = "Выключено";
@@ -70,4 +72,5 @@
 "windowFrame.mode.frame" = "Рамка";
 "settings.caret" = "Каретка";
 "settings.general" = "Основные";
+"settings.status" = "Статус";
 "settings.window" = "Окно";
