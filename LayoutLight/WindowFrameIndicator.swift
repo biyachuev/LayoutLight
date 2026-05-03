@@ -2,19 +2,22 @@ import Cocoa
 import ApplicationServices
 
 final class WindowFrameIndicator {
-    private let window: WindowFrameIndicatorWindow
+    private var window: WindowFrameIndicatorWindow
     private let view: WindowFrameIndicatorView
     private let isRussianActive: () -> Bool
     private var enabled = false
     private var activationObserver: NSObjectProtocol?
+    private var screenParametersObserver: NSObjectProtocol?
     private var settingsObserver: NSObjectProtocol?
     private var caretSettingsObserver: NSObjectProtocol?
     private var languageSettingsObserver: NSObjectProtocol?
     private var pollTimer: Timer?
     private var dragPollTimer: Timer?
+    private var screenRefreshGeneration = 0
     private var localMouseMonitor: Any?
     private var globalMouseMonitor: Any?
     private var isSuppressedByMenuBar = false
+    private var didPromptForAccessibility = false
     private var currentPID: pid_t = 0
     private var appElement: AXUIElement?
     private var windowObserver: AXObserver?
@@ -71,8 +74,13 @@ final class WindowFrameIndicator {
             return
         }
         isSuppressedByMenuBar = false
-        guard AXIsProcessTrusted(),
-              let focusedWindow = WindowFrameGeometry.focusedWindow(),
+        guard hasAccessibilityPermission else {
+            promptForAccessibilityIfNeeded()
+            teardownWindowObserver()
+            hide()
+            return
+        }
+        guard let focusedWindow = WindowFrameGeometry.focusedWindow(),
               !focusedWindow.frame.isEmpty else {
             teardownWindowObserver()
             hide()
@@ -105,6 +113,8 @@ final class WindowFrameIndicator {
     }
 
     private func start() {
+        promptForAccessibilityIfNeeded()
+
         let nc = NSWorkspace.shared.notificationCenter
         activationObserver = nc.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
@@ -118,6 +128,13 @@ final class WindowFrameIndicator {
         }
         RunLoop.main.add(timer, forMode: .common)
         pollTimer = timer
+        screenParametersObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleScreenParametersChanged()
+        }
         installMouseMonitors()
         refresh()
     }
@@ -127,6 +144,11 @@ final class WindowFrameIndicator {
             NSWorkspace.shared.notificationCenter.removeObserver(activationObserver)
             self.activationObserver = nil
         }
+        if let screenParametersObserver {
+            NotificationCenter.default.removeObserver(screenParametersObserver)
+            self.screenParametersObserver = nil
+        }
+        invalidatePendingScreenRefreshes()
         pollTimer?.invalidate()
         pollTimer = nil
         stopDragPolling()
@@ -145,6 +167,40 @@ final class WindowFrameIndicator {
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
             self?.handleMouseEvent(event)
         }
+    }
+
+    private func handleScreenParametersChanged() {
+        guard enabled else { return }
+
+        invalidatePendingScreenRefreshes()
+        hide()
+        recreateWindow()
+
+        refresh()
+        scheduleScreenRefresh(after: 0.2)
+        scheduleScreenRefresh(after: 0.8)
+    }
+
+    private func recreateWindow() {
+        window.contentView = nil
+        window.close()
+
+        let newWindow = WindowFrameIndicatorWindow()
+        newWindow.contentView = view
+        window = newWindow
+    }
+
+    private func scheduleScreenRefresh(after delay: TimeInterval) {
+        let generation = screenRefreshGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            guard let self else { return }
+            guard self.enabled, self.screenRefreshGeneration == generation else { return }
+            self.refresh()
+        }
+    }
+
+    private func invalidatePendingScreenRefreshes() {
+        screenRefreshGeneration &+= 1
     }
 
     private func removeMouseMonitors() {
@@ -311,5 +367,17 @@ final class WindowFrameIndicator {
         let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
         let threshold = max(24, min(44, menuBarHeight > 0 ? menuBarHeight : 24))
         return point.y >= screen.frame.maxY - threshold
+    }
+
+    private var hasAccessibilityPermission: Bool {
+        AXIsProcessTrusted()
+    }
+
+    private func promptForAccessibilityIfNeeded() {
+        guard !hasAccessibilityPermission, !didPromptForAccessibility else { return }
+        didPromptForAccessibility = true
+        let prompt = "AXTrustedCheckOptionPrompt" as CFString
+        let options = [prompt: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
     }
 }
