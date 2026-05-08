@@ -104,6 +104,8 @@ final class CaretIndicator {
     private var trustWatchTimer: Timer?
     private var pollTimer: Timer?
     private var typingPauseTimer: Timer?
+    private var languageSwitchRevealTimer: Timer?
+    private var languageSwitchRevealUntil: Date?
     private var waitingForTypingPause = false
 
     init(isRussianActive: @escaping () -> Bool) {
@@ -175,6 +177,29 @@ final class CaretIndicator {
             view.color = new
             view.needsDisplay = true
         }
+    }
+
+    func revealAfterInputSourceChange(duration: TimeInterval = 0.5) {
+        guard enabled, trusted else { return }
+
+        languageSwitchRevealTimer?.invalidate()
+        languageSwitchRevealUntil = Date().addingTimeInterval(duration)
+
+        syncToFrontmostApp()
+        updateIndicator()
+
+        let t = Timer(timeInterval: duration, repeats: false) { [weak self] _ in
+            guard let self else { return }
+            self.languageSwitchRevealTimer = nil
+            self.languageSwitchRevealUntil = nil
+            if self.waitingForTypingPause {
+                self.hideIndicator()
+            } else {
+                self.updateIndicator()
+            }
+        }
+        RunLoop.main.add(t, forMode: .common)
+        languageSwitchRevealTimer = t
     }
 
     private func applySettingsChange() {
@@ -268,6 +293,9 @@ final class CaretIndicator {
         teardownAppObserver()
         pollTimer?.invalidate()
         pollTimer = nil
+        languageSwitchRevealTimer?.invalidate()
+        languageSwitchRevealTimer = nil
+        languageSwitchRevealUntil = nil
         clearTypingPauseSuppression()
     }
 
@@ -427,7 +455,7 @@ final class CaretIndicator {
             hideIndicator()
             return
         }
-        guard !waitingForTypingPause else {
+        guard !waitingForTypingPause || isLanguageSwitchRevealActive else {
             hideIndicator()
             return
         }
@@ -460,7 +488,9 @@ final class CaretIndicator {
         }
 
         waitingForTypingPause = true
-        hideIndicator()
+        if !isLanguageSwitchRevealActive {
+            hideIndicator()
+        }
         typingPauseTimer?.invalidate()
 
         let t = Timer(timeInterval: settings.typingResumeDelay, repeats: false) { [weak self] _ in
@@ -477,6 +507,13 @@ final class CaretIndicator {
         typingPauseTimer?.invalidate()
         typingPauseTimer = nil
         waitingForTypingPause = false
+    }
+
+    private var isLanguageSwitchRevealActive: Bool {
+        guard let until = languageSwitchRevealUntil else { return false }
+        if until > Date() { return true }
+        languageSwitchRevealUntil = nil
+        return false
     }
 
     private func showIndicator(at caret: CaretGeometry) {

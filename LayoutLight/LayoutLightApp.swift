@@ -133,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.flagOverlay.show()
             }
             if self.colorCaretByLanguage {
-                self.caretIndicator.refreshColor()
+                self.caretIndicator.revealAfterInputSourceChange()
             }
             self.windowFrameIndicator.refresh()
         }
