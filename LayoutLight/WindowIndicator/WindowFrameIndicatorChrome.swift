@@ -10,10 +10,13 @@ final class WindowFrameIndicatorWindow: NSPanel {
         )
         isOpaque = false
         backgroundColor = .clear
-        level = .floating
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        level = .screenSaver
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .transient, .ignoresCycle]
         ignoresMouseEvents = true
         hasShadow = false
+        hidesOnDeactivate = false
+        isFloatingPanel = true
+        isReleasedWhenClosed = false
     }
 
     override var canBecomeKey: Bool { false }
