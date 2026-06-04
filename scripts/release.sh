@@ -34,6 +34,7 @@ fi
 cd "$(dirname "$0")/.."
 
 rm -rf "$BUILD_DIR"
+xattr -cr LayoutLight LayoutLight.xcodeproj
 xcodebuild -project LayoutLight.xcodeproj \
   -scheme LayoutLight -configuration Release \
   -derivedDataPath "$BUILD_DIR" \
@@ -46,6 +47,7 @@ APP="$BUILD_DIR/Build/Products/Release/$APP_NAME.app"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
 DMG="$BUILD_DIR/$APP_NAME-$VERSION.dmg"
 
+xattr -cr "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 
 rm -f "$DMG"

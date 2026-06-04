@@ -67,7 +67,7 @@ private final class AboutWindowController: NSObject, NSWindowDelegate {
             return
         }
 
-        let size = NSSize(width: 480, height: 600)
+        let size = NSSize(width: 480, height: 640)
         let screen = NSScreen.main ?? NSScreen.screens.first
         let visibleFrame = screen?.visibleFrame ?? .zero
         let frame = NSRect(
@@ -153,7 +153,7 @@ private struct AboutView: View {
         .padding(.top, 22)
         .padding(.horizontal, 24)
         .padding(.bottom, 20)
-        .frame(width: 480, height: 600)
+        .frame(width: 480, height: 640)
         .background(Theme.bgSurface)
         .overlay(
             UnevenRoundedRectangle(

@@ -61,7 +61,7 @@
 "about.close" = "Close";
 "about.developerTitle" = "Developer";
 "about.licenseTitle" = "License";
-"about.privacy.text" = "LayoutLight works locally and does not send keyboard input, active-window data, analytics, or settings to AI services, cloud services, or third-party servers.";
+"about.privacy.text" = "LayoutLight works locally and does not send keyboard input, active-window data, analytics, or settings to AI services, cloud services, or third-party servers. The window indicator observes mouse movement/click/drag metadata only to hide or refresh its overlay; it does not store mouse coordinates.";
 "about.privacy.title" = "Privacy";
 "about.securityDetail" = "Local-only policy";
 "about.securityTitle" = "Security";
