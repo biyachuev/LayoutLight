@@ -21,6 +21,7 @@
 "language.russian" = "Russian";
 "languageColors.note" = "Used by both caret and window indicators.";
 "languageColors.title" = "Language Colors";
+"menu.about" = "About %@";
 "menu.colorCaret" = "Color caret by language";
 "menu.colorCaretNeedsAccessibility" = "Color caret by language (needs Accessibility)";
 "menu.colorCaretWaiting" = "Color caret by language (waiting for Accessibility...)";
@@ -55,6 +56,18 @@
 "shortcuts.warningTitle" = "Shortcut not saved";
 "common.disabled" = "Off";
 "common.enabled" = "On";
+"about.ai.text" = "LayoutLight was developed with programming support from OpenAI Codex and Anthropic Claude Code.";
+"about.ai.title" = "Built with AI assistance";
+"about.close" = "Close";
+"about.developerTitle" = "Developer";
+"about.licenseTitle" = "License";
+"about.privacy.text" = "LayoutLight works locally and does not send keyboard input, active-window data, analytics, or settings to AI services, cloud services, or third-party servers.";
+"about.privacy.title" = "Privacy";
+"about.securityDetail" = "Local-only policy";
+"about.securityTitle" = "Security";
+"about.summary" = "A compact macOS utility for visible keyboard layout status.";
+"about.version" = "Version %@";
+"about.windowTitle" = "About %@";
 "window.settingsTitle" = "LayoutLight Settings";
 "windowIndicator.edgeSide" = "Edge side";
 "windowIndicator.disabled" = "Off";

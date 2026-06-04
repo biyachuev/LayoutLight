@@ -3,8 +3,22 @@ import SwiftUI
 @main
 struct LayoutLightApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var menuState = MenuBarState.shared
+    @StateObject private var windowSettings = WindowFrameIndicatorSettingsStore.shared
+    @StateObject private var languageStore = InterfaceLanguageStore.shared
 
     var body: some Scene {
+        MenuBarExtra {
+            MenuBarContent(
+                state: menuState,
+                windowSettings: windowSettings,
+                languageStore: languageStore
+            )
+        } label: {
+            MenuBarLabel(state: menuState)
+        }
+        .menuBarExtraStyle(.menu)
+
         Settings { EmptyView() }
     }
 }
@@ -22,7 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self?.flagOverlay.isRussianActive() ?? false
     })
 
-    private var statusMenu: StatusMenuController!
+    private let menuState = MenuBarState.shared
     private var showOverlayOnSwitch = false
     private var colorCaretByLanguage = false
     private var settingsObserver: NSObjectProtocol?
@@ -38,16 +52,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         showOverlayOnSwitch = UserDefaults.standard.object(forKey: DefaultsKey.showOverlayOnSwitch) as? Bool ?? false
         colorCaretByLanguage = UserDefaults.standard.bool(forKey: DefaultsKey.colorCaretByLanguage)
 
-        statusMenu = StatusMenuController(
-            currentFlag: flagOverlay.currentFlag,
-            showOverlayOnSwitch: showOverlayOnSwitch
-        )
-        wireStatusMenuCallbacks()
+        menuState.currentFlag = flagOverlay.currentFlag
+        menuState.showOverlayOnSwitch = showOverlayOnSwitch
+        menuState.colorCaretByLanguage = colorCaretByLanguage
+        wireMenuStateCallbacks()
 
         caretIndicator.onAccessibilityStateChanged = { [weak self] in
-            DispatchQueue.main.async { self?.refreshCaretToggleItem() }
+            DispatchQueue.main.async { self?.refreshCaretAccessibilityState() }
         }
-        refreshCaretToggleItem()
+        refreshCaretAccessibilityState()
         if colorCaretByLanguage { caretIndicator.setEnabled(true) }
         applyWindowFrameIndicatorSettings()
 
@@ -84,7 +97,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             self?.applyWindowFrameIndicatorSettings()
         }
-        refreshLocalizedTexts()
 
         hotkeys.onShowFlag = { [weak self] in
             DispatchQueue.main.async { self?.showFlag() }
@@ -108,27 +120,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         windowFrameIndicator.setEnabled(false)
     }
 
-    private func wireStatusMenuCallbacks() {
-        statusMenu.onToggleOverlay = { [weak self] in
-            self?.toggleOverlay()
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
+    private func wireMenuStateCallbacks() {
+        menuState.onToggleOverlay = { [weak self] in self?.toggleOverlay() }
+        menuState.onToggleCaret = { [weak self] in self?.toggleCaretColoring() }
+        menuState.onToggleWindowIndicator = { [weak self] in self?.toggleWindowFrameIndicator() }
+        menuState.onOpenSettings = { [weak self] in self?.settingsWindowController.show() }
+        menuState.onOpenAbout = {
+            Task { @MainActor in AboutPanel.show() }
         }
-        statusMenu.onToggleCaretColoring = { [weak self] in
-            self?.toggleCaretColoring()
-        }
-        statusMenu.onToggleWindowIndicator = { [weak self] in
-            self?.toggleWindowFrameIndicator()
-        }
-        statusMenu.onOpenSettings = { [weak self] in
-            self?.settingsWindowController.show()
-        }
-        statusMenu.onSelectInterfaceLanguage = { choice in
+        menuState.onSelectInterfaceLanguage = { choice in
             InterfaceLanguageStore.shared.choice = choice
         }
     }
 
     private func inputSourceChanged() {
         DispatchQueue.main.async {
-            self.statusMenu.setCurrentFlag(self.flagOverlay.currentFlag)
+            self.menuState.currentFlag = self.flagOverlay.currentFlag
             if self.showOverlayOnSwitch {
                 self.flagOverlay.show()
             }
@@ -140,21 +151,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showFlag() {
-        statusMenu.setCurrentFlag(flagOverlay.currentFlag)
+        menuState.currentFlag = flagOverlay.currentFlag
         flagOverlay.show()
     }
 
     private func toggleOverlay() {
         showOverlayOnSwitch.toggle()
-        statusMenu.setOverlayEnabled(showOverlayOnSwitch)
+        menuState.showOverlayOnSwitch = showOverlayOnSwitch
         UserDefaults.standard.set(showOverlayOnSwitch, forKey: DefaultsKey.showOverlayOnSwitch)
     }
 
     private func toggleCaretColoring() {
         colorCaretByLanguage.toggle()
+        menuState.colorCaretByLanguage = colorCaretByLanguage
         UserDefaults.standard.set(colorCaretByLanguage, forKey: DefaultsKey.colorCaretByLanguage)
         caretIndicator.setEnabled(colorCaretByLanguage)
-        refreshCaretToggleItem()
     }
 
     private func toggleWindowFrameIndicator() {
@@ -163,30 +174,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func applyWindowFrameIndicatorSettings() {
         let enabled = WindowFrameIndicatorSettingsStore.shared.settings.isEnabled
-        statusMenu.setWindowIndicatorEnabled(enabled)
         windowFrameIndicator.setEnabled(enabled)
         windowFrameIndicator.refresh()
     }
 
-    private func refreshCaretToggleItem() {
-        statusMenu.setCaretColoringEnabled(colorCaretByLanguage, title: caretToggleTitle)
-    }
-
-    private var caretToggleTitle: String {
-        if caretIndicator.isWaitingForAccessibilityPermission {
-            return I18n.t("menu.colorCaretWaiting")
-        } else if !caretIndicator.hasAccessibilityPermission {
-            return I18n.t("menu.colorCaretNeedsAccessibility")
-        } else {
-            return I18n.t("menu.colorCaret")
-        }
+    private func refreshCaretAccessibilityState() {
+        menuState.caretWaitingForAccessibility = caretIndicator.isWaitingForAccessibilityPermission
+        menuState.caretHasAccessibility = caretIndicator.hasAccessibilityPermission
     }
 
     private func refreshLocalizedTexts() {
-        statusMenu.refreshLocalizedTexts(
-            caretTitle: caretToggleTitle,
-            isCaretColoringEnabled: colorCaretByLanguage
-        )
+        menuState.languageRevision &+= 1
         settingsWindowController.refreshLocalizedTitle()
     }
 }

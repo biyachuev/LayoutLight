@@ -21,6 +21,7 @@
 "language.russian" = "Русский";
 "languageColors.note" = "Используются и для каретки, и для индикатора окна.";
 "languageColors.title" = "Цвета языков";
+"menu.about" = "О %@";
 "menu.colorCaret" = "Подсвечивать каретку по языку";
 "menu.colorCaretNeedsAccessibility" = "Подсвечивать каретку по языку (нужен Accessibility)";
 "menu.colorCaretWaiting" = "Подсвечивать каретку по языку (ожидание Accessibility...)";
@@ -55,6 +56,18 @@
 "shortcuts.warningTitle" = "Сочетание не сохранено";
 "common.disabled" = "Выключено";
 "common.enabled" = "Включено";
+"about.ai.text" = "LayoutLight разработан при программной поддержке OpenAI Codex и Anthropic Claude Code.";
+"about.ai.title" = "Разработка с помощью ИИ";
+"about.close" = "Закрыть";
+"about.developerTitle" = "Разработчик";
+"about.licenseTitle" = "Лицензия";
+"about.privacy.text" = "LayoutLight работает локально и не отправляет ввод с клавиатуры, данные активного окна, аналитику или настройки в AI-сервисы, облачные сервисы или на сторонние серверы.";
+"about.privacy.title" = "Приватность";
+"about.securityDetail" = "Локальная работа";
+"about.securityTitle" = "Безопасность";
+"about.summary" = "Компактная утилита macOS для видимого статуса раскладки клавиатуры.";
+"about.version" = "Версия %@";
+"about.windowTitle" = "О %@";
 "window.settingsTitle" = "Настройки LayoutLight";
 "windowIndicator.edgeSide" = "Сторона линии";
 "windowIndicator.disabled" = "Выключено";
