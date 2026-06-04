@@ -4,7 +4,7 @@ LayoutLight is a small macOS menu-bar utility that makes the active keyboard lay
 
 It can show the current layout near the text caret, around the focused window, along a screen edge, and as a compact flag overlay when the input source changes.
 
-This is a personal macOS project published as source code. Prebuilt binaries are not distributed.
+This is a personal macOS project. Source code is here; prebuilt DMGs will appear on the [Releases](../../releases) page once code signing is set up.
 
 ## Features
 
