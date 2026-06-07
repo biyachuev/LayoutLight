@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsPanel: View {
     @ObservedObject var languageStore: InterfaceLanguageStore = .shared
+    @ObservedObject var languageIndicatorStore: LanguageIndicatorSettingsStore = .shared
     @ObservedObject var hotKeyStore: HotKeySettingsStore = .shared
     @ObservedObject var launchAtLoginStore: LaunchAtLoginStore = .shared
     @State private var recordingShortcut: ShortcutAction?
@@ -16,6 +17,7 @@ struct GeneralSettingsPanel: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 launchAtLoginCard
+                languageIconCard
                 shortcutSettingsCard
             }
 
@@ -49,6 +51,35 @@ struct GeneralSettingsPanel: View {
         .padding(SettingsLayout.cardPadding)
         .settingsCardStyle()
         .onAppear { launchAtLoginStore.refresh() }
+    }
+
+    private var languageIconCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(I18n.t("englishIcon.title"))
+                .font(.system(size: 13, weight: .semibold))
+
+            Picker(
+                I18n.t("englishIcon.picker"),
+                selection: Binding(
+                    get: { languageIndicatorStore.settings.englishIcon },
+                    set: { languageIndicatorStore.settings.englishIcon = $0 }
+                )
+            ) {
+                ForEach(EnglishLanguageIcon.allCases) { icon in
+                    Text("\(icon.symbol) \(icon.displayName)")
+                        .tag(icon)
+                }
+            }
+            .pickerStyle(.segmented)
+            .id(languageStore.choice)
+
+            Text(I18n.t("englishIcon.note"))
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(SettingsLayout.cardPadding)
+        .settingsCardStyle()
     }
 
     private var shortcutSettingsCard: some View {

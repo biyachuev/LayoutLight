@@ -56,6 +56,12 @@
 "shortcuts.warningTitle" = "Shortcut not saved";
 "common.disabled" = "Off";
 "common.enabled" = "On";
+"englishIcon.globe1" = "Globe 1";
+"englishIcon.globe2" = "Globe 2";
+"englishIcon.note" = "Used for English in the menu bar and switch overlay.";
+"englishIcon.picker" = "English icon";
+"englishIcon.title" = "English Icon";
+"englishIcon.usFlag" = "US Flag";
 "about.ai.text" = "LayoutLight was developed with programming support from OpenAI Codex and Anthropic Claude Code.";
 "about.ai.title" = "Built with AI assistance";
 "about.close" = "Close";

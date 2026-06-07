@@ -66,4 +66,44 @@ struct LayoutLightTests {
         #expect(frame == NSRect(x: -250, y: 740, width: 30, height: 40))
     }
 
+    @Test func languageIndicatorSettingsDefaultsToGlobeForEnglishIcon() {
+        #expect(LanguageIndicatorSettings.defaults.englishIcon == .globe1)
+        #expect(LanguageIconProvider.icon(isRussian: false, settings: .defaults) == "🌍")
+        #expect(LanguageIconProvider.icon(isRussian: true, settings: .defaults) == "🇷🇺")
+    }
+
+    @Test func languageIndicatorSettingsDecodesOldPayloadWithGlobe1Default() throws {
+        let json = """
+        {
+          "showForEN": true,
+          "showForRU": false,
+          "colorEN": { "r": 0.1, "g": 0.2, "b": 0.3, "a": 1.0 },
+          "colorRU": { "r": 0.4, "g": 0.5, "b": 0.6, "a": 1.0 }
+        }
+        """
+
+        let settings = try JSONDecoder().decode(LanguageIndicatorSettings.self, from: Data(json.utf8))
+
+        #expect(settings.showForEN)
+        #expect(!settings.showForRU)
+        #expect(settings.englishIcon == .globe1)
+    }
+
+    @Test func languageIndicatorSettingsKeepsSavedGlobe2Icon() throws {
+        let json = """
+        {
+          "showForEN": true,
+          "showForRU": true,
+          "colorEN": { "r": 0.1, "g": 0.2, "b": 0.3, "a": 1.0 },
+          "colorRU": { "r": 0.4, "g": 0.5, "b": 0.6, "a": 1.0 },
+          "englishIcon": "globe"
+        }
+        """
+
+        let settings = try JSONDecoder().decode(LanguageIndicatorSettings.self, from: Data(json.utf8))
+
+        #expect(settings.englishIcon == .globe)
+        #expect(LanguageIconProvider.icon(isRussian: false, settings: settings) == "🌐")
+    }
+
 }

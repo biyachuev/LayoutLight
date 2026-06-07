@@ -43,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotKeySettingsObserver: NSObjectProtocol?
     private var shortcutRecordingObserver: NSObjectProtocol?
     private var interfaceLanguageObserver: NSObjectProtocol?
+    private var languageIndicatorSettingsObserver: NSObjectProtocol?
     private var windowFrameSettingsObserver: NSObjectProtocol?
     private var isRecordingShortcut = false
 
@@ -92,6 +93,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             self?.refreshLocalizedTexts()
         }
+        languageIndicatorSettingsObserver = NotificationCenter.default.addObserver(
+            forName: .languageIndicatorSettingsChanged, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.refreshLanguageIndicators()
+        }
         windowFrameSettingsObserver = NotificationCenter.default.addObserver(
             forName: .windowFrameIndicatorSettingsChanged, object: nil, queue: .main
         ) { [weak self] _ in
@@ -116,6 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let s = hotKeySettingsObserver { NotificationCenter.default.removeObserver(s) }
         if let s = shortcutRecordingObserver { NotificationCenter.default.removeObserver(s) }
         if let s = interfaceLanguageObserver { NotificationCenter.default.removeObserver(s) }
+        if let s = languageIndicatorSettingsObserver { NotificationCenter.default.removeObserver(s) }
         if let s = windowFrameSettingsObserver { NotificationCenter.default.removeObserver(s) }
         windowFrameIndicator.setEnabled(false)
     }
@@ -186,5 +193,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func refreshLocalizedTexts() {
         menuState.languageRevision &+= 1
         settingsWindowController.refreshLocalizedTitle()
+    }
+
+    private func refreshLanguageIndicators() {
+        menuState.currentFlag = flagOverlay.currentFlag
     }
 }

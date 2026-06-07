@@ -29,7 +29,7 @@ final class FlagOverlayWindow: NSPanel {
 // MARK: - Overlay View (HUD-style rounded rect + flag + label)
 
 final class FlagOverlayView: NSView {
-    var flag: String = "🇺🇸"
+    var flag: String = EnglishLanguageIcon.globe1.symbol
     var langCode: String = "EN"
 
     override func draw(_ dirtyRect: NSRect) {
@@ -74,7 +74,9 @@ final class FlagOverlay {
         InputSourceLanguage.isRussianActive()
     }
 
-    var currentFlag: String { isRussianActive() ? "🇷🇺" : "🇺🇸" }
+    var currentFlag: String {
+        LanguageIconProvider.icon(isRussian: isRussianActive())
+    }
 
     // MARK: - Show
 
@@ -82,7 +84,7 @@ final class FlagOverlay {
         hideTimer?.invalidate()
 
         let russian = isRussianActive()
-        overlayView.flag = russian ? "🇷🇺" : "🇺🇸"
+        overlayView.flag = LanguageIconProvider.icon(isRussian: russian)
         overlayView.langCode = russian ? "RU" : "EN"
         overlayView.needsDisplay = true
 

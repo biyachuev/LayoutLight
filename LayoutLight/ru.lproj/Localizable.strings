@@ -56,6 +56,12 @@
 "shortcuts.warningTitle" = "Сочетание не сохранено";
 "common.disabled" = "Выключено";
 "common.enabled" = "Включено";
+"englishIcon.globe1" = "Глобус 1";
+"englishIcon.globe2" = "Глобус 2";
+"englishIcon.note" = "Используется для английского языка в menu bar и оверлее переключения.";
+"englishIcon.picker" = "Иконка английского";
+"englishIcon.title" = "Иконка английского языка";
+"englishIcon.usFlag" = "Флаг США";
 "about.ai.text" = "LayoutLight разработан при программной поддержке OpenAI Codex и Anthropic Claude Code.";
 "about.ai.title" = "Разработка с помощью ИИ";
 "about.close" = "Закрыть";
