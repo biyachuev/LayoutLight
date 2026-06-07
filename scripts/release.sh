@@ -58,7 +58,7 @@ xcodebuild -project LayoutLight.xcodeproj \
   -derivedDataPath "$BUILD_DIR" \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   CODE_SIGNING_ALLOWED=NO \
-  "${XCODEBUILD_ARCH_ARGS[@]}" \
+  ${XCODEBUILD_ARCH_ARGS[@]+"${XCODEBUILD_ARCH_ARGS[@]}"} \
   build
 
 APP="$BUILD_DIR/Build/Products/Release/$APP_NAME.app"
