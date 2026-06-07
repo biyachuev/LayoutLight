@@ -95,7 +95,7 @@ struct WindowSettingsPanel: View {
                 Text(I18n.t("windowIndicator.thickness"))
                     .font(.system(size: 13))
                     .frame(width: SettingsLayout.labelWidth, alignment: .leading)
-                Slider(value: $windowFrameStore.settings.thickness, in: 1...12, step: 1)
+                SettingsSlider(value: $windowFrameStore.settings.thickness, range: 1...12, step: 1)
                 Text("\(Int(windowFrameStore.settings.thickness))")
                     .font(.system(size: 12))
                     .frame(width: SettingsLayout.valueWidth, alignment: .trailing)
