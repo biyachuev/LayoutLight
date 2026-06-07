@@ -10,6 +10,7 @@
 # Usage:
 #   DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" ./scripts/release.sh
 #   TEAM_ID="TEAMID" ./scripts/release.sh
+#   ARCHS="x86_64" DMG_SUFFIX="-intel" BUILD_DIR="/private/tmp/LayoutLight-release-intel" ./scripts/release.sh
 #
 # Or edit DEVELOPER_ID default below.
 
@@ -21,6 +22,8 @@ TEAM_ID="${TEAM_ID:-VKH47WM4KC}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-AC_NOTARY}"
 BUILD_DIR="${BUILD_DIR:-/private/tmp/LayoutLight-release}"
 OUTPUT_DIR="${OUTPUT_DIR:-build/release}"
+ARCHS="${ARCHS:-}"
+DMG_SUFFIX="${DMG_SUFFIX:-}"
 
 if [[ -z "$DEVELOPER_ID" ]]; then
   DEVELOPER_ID=$(security find-identity -v -p codesigning \
@@ -40,6 +43,11 @@ if ! command -v create-dmg >/dev/null 2>&1; then
   exit 1
 fi
 
+XCODEBUILD_ARCH_ARGS=()
+if [[ -n "$ARCHS" ]]; then
+  XCODEBUILD_ARCH_ARGS=(ARCHS="$ARCHS" ONLY_ACTIVE_ARCH=NO)
+fi
+
 cd "$(dirname "$0")/.."
 
 rm -rf "$BUILD_DIR"
@@ -50,11 +58,12 @@ xcodebuild -project LayoutLight.xcodeproj \
   -derivedDataPath "$BUILD_DIR" \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   CODE_SIGNING_ALLOWED=NO \
+  "${XCODEBUILD_ARCH_ARGS[@]}" \
   build
 
 APP="$BUILD_DIR/Build/Products/Release/$APP_NAME.app"
 VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
-DMG="$BUILD_DIR/$APP_NAME-$VERSION.dmg"
+DMG="$BUILD_DIR/$APP_NAME-$VERSION$DMG_SUFFIX.dmg"
 
 xattr -cr "$APP"
 codesign --force --deep --sign "$DEVELOPER_ID" --timestamp --options runtime \
@@ -70,7 +79,10 @@ create-dmg \
   --app-drop-link 370 150 \
   "$DMG" "$APP"
 
-codesign --force --sign "$DEVELOPER_ID" --timestamp "$DMG"
+codesign --force --sign "$DEVELOPER_ID" --timestamp "$DMG" || {
+  echo "Retrying DMG codesign timestamp..." >&2
+  codesign --force --sign "$DEVELOPER_ID" --timestamp "$DMG"
+}
 xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
 xcrun stapler staple "$DMG"
 spctl -a -vv -t install "$DMG"
