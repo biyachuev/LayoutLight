@@ -4,7 +4,7 @@ LayoutLight is a small macOS menu-bar utility that makes the active keyboard lay
 
 It can show the current layout near the text caret, around the focused window, along a screen edge, and as a compact flag overlay when the input source changes.
 
-This is a personal macOS project. Source code is here; prebuilt DMGs will appear on the [Releases](../../releases) page once code signing is set up.
+This is a personal macOS project. Source code is here; signed and notarized DMGs are published on the [Releases](../../releases) page when available.
 
 ## Features
 
@@ -20,7 +20,14 @@ This is a personal macOS project. Source code is here; prebuilt DMGs will appear
 - **Launch at login** — optional startup through macOS Service Management.
 - **Localized settings** — English and Russian UI.
 
-## Build
+## Install
+
+1. Download `LayoutLight-x.y.dmg` from the [latest release](../../releases/latest).
+2. Open the DMG and drag `LayoutLight.app` to Applications.
+3. On first launch, grant **Accessibility** access: System Settings -> Privacy & Security -> Accessibility -> enable LayoutLight.
+4. Optional: enable **Launch at Login** in LayoutLight settings.
+
+## Build From Source
 
 Open `LayoutLight.xcodeproj` in Xcode 16+ and build the `LayoutLight` scheme.
 

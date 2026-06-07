@@ -9,6 +9,7 @@
 #
 # Usage:
 #   DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" ./scripts/release.sh
+#   TEAM_ID="TEAMID" ./scripts/release.sh
 #
 # Or edit DEVELOPER_ID default below.
 
@@ -16,14 +17,22 @@ set -euo pipefail
 
 APP_NAME="LayoutLight"
 DEVELOPER_ID="${DEVELOPER_ID:-}"
+TEAM_ID="${TEAM_ID:-VKH47WM4KC}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-AC_NOTARY}"
-BUILD_DIR="build/release"
+BUILD_DIR="${BUILD_DIR:-/private/tmp/LayoutLight-release}"
+OUTPUT_DIR="${OUTPUT_DIR:-build/release}"
 
 if [[ -z "$DEVELOPER_ID" ]]; then
-  echo "ERROR: DEVELOPER_ID is not set." >&2
-  echo "  Example:" >&2
-  echo '  DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" ./scripts/release.sh' >&2
-  exit 1
+  DEVELOPER_ID=$(security find-identity -v -p codesigning \
+    | sed -n "s/.*\"\(Developer ID Application: .*(\(${TEAM_ID}\))\)\".*/\1/p" \
+    | head -n 1)
+
+  if [[ -z "$DEVELOPER_ID" ]]; then
+    echo "ERROR: DEVELOPER_ID is not set and no Developer ID Application identity was found for team $TEAM_ID." >&2
+    echo "  Example:" >&2
+    echo '  DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" ./scripts/release.sh' >&2
+    exit 1
+  fi
 fi
 
 if ! command -v create-dmg >/dev/null 2>&1; then
@@ -34,13 +43,13 @@ fi
 cd "$(dirname "$0")/.."
 
 rm -rf "$BUILD_DIR"
+mkdir -p "$OUTPUT_DIR"
 xattr -cr LayoutLight LayoutLight.xcodeproj
 xcodebuild -project LayoutLight.xcodeproj \
   -scheme LayoutLight -configuration Release \
   -derivedDataPath "$BUILD_DIR" \
-  CODE_SIGN_IDENTITY="$DEVELOPER_ID" \
-  CODE_SIGN_STYLE=Manual \
-  OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" \
+  DEVELOPMENT_TEAM="$TEAM_ID" \
+  CODE_SIGNING_ALLOWED=NO \
   build
 
 APP="$BUILD_DIR/Build/Products/Release/$APP_NAME.app"
@@ -48,6 +57,9 @@ VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/C
 DMG="$BUILD_DIR/$APP_NAME-$VERSION.dmg"
 
 xattr -cr "$APP"
+codesign --force --deep --sign "$DEVELOPER_ID" --timestamp --options runtime \
+  --entitlements LayoutLight/LayoutLight.entitlements \
+  "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
 
 rm -f "$DMG"
@@ -63,5 +75,8 @@ xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait
 xcrun stapler staple "$DMG"
 spctl -a -vv -t install "$DMG"
 
+OUTPUT_DMG="$OUTPUT_DIR/$(basename "$DMG")"
+cp "$DMG" "$OUTPUT_DMG"
+
 echo ""
-echo "Ready: $DMG"
+echo "Ready: $OUTPUT_DMG"

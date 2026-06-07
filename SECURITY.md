@@ -12,7 +12,7 @@ LayoutLight is not sandboxed because Accessibility APIs require running outside 
 
 ## Binary Distribution Checklist
 
-This project is published as source code and does not provide official binaries. If you choose to distribute a binary build, verify it before sharing:
+Official binary releases should be distributed only through GitHub Releases as signed and notarized DMGs. Before sharing a release:
 
 - Build with Hardened Runtime enabled.
 - Sign with a Developer ID certificate.
