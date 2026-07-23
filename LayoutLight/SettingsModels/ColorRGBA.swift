@@ -8,7 +8,29 @@ struct ColorRGBA: Codable, Equatable {
     var a: Double
 
     init(r: Double, g: Double, b: Double, a: Double = 1) {
-        self.r = r; self.g = g; self.b = b; self.a = a
+        self.r = Self.sanitizedComponent(r, fallback: 0)
+        self.g = Self.sanitizedComponent(g, fallback: 0)
+        self.b = Self.sanitizedComponent(b, fallback: 0)
+        self.a = Self.sanitizedComponent(a, fallback: 1)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case r, g, b, a
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            r: try c.decodeIfPresent(Double.self, forKey: .r) ?? 0,
+            g: try c.decodeIfPresent(Double.self, forKey: .g) ?? 0,
+            b: try c.decodeIfPresent(Double.self, forKey: .b) ?? 0,
+            a: try c.decodeIfPresent(Double.self, forKey: .a) ?? 1
+        )
+    }
+
+    private static func sanitizedComponent(_ value: Double, fallback: Double) -> Double {
+        guard value.isFinite else { return fallback }
+        return min(max(value, 0), 1)
     }
 
     var nsColor: NSColor {

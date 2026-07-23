@@ -53,6 +53,25 @@ struct LayoutLightTests {
         #expect(abs(roundTrip.a - source.a) < 0.001)
     }
 
+    @Test func colorRGBASanitizesOutOfRangeAndNonFiniteValues() throws {
+        let direct = ColorRGBA(r: -1, g: 2, b: .nan, a: .infinity)
+
+        #expect(direct.r == 0)
+        #expect(direct.g == 1)
+        #expect(direct.b == 0)
+        #expect(direct.a == 1)
+
+        let json = """
+        { "r": -0.25, "g": 1.25, "b": 0.5 }
+        """
+        let decoded = try JSONDecoder().decode(ColorRGBA.self, from: Data(json.utf8))
+
+        #expect(decoded.r == 0)
+        #expect(decoded.g == 1)
+        #expect(decoded.b == 0.5)
+        #expect(decoded.a == 1)
+    }
+
     @Test func axScreenMathConvertsTopDownDisplayCoordinatesToAppKitCoordinates() {
         let screenFrame = NSRect(x: -300, y: 100, width: 1200, height: 800)
         let frame = AXScreenMath.frameInAppKitCoordinates(
