@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-07-23
+
+### Fixed
+- Keep the window-edge indicator aligned with the main Chrome window when Chromium exposes auxiliary layer-0 surfaces before it.
+- Hide indicators while macOS Secure Event Input is active so App Store and other protected password dialogs remain unobstructed.
+- Hide the window indicator while an application-owned popover or menu covers the indicated edge.
+
 ### Added
 - Public GitHub release pipeline: signed + notarized DMG via `scripts/release.sh`.
 
@@ -30,5 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Localized settings** — English and Russian UI.
 - Event-driven Accessibility observer (`AXObserver`) with low-rate fallback poll for apps that don't emit all notifications.
 
-[Unreleased]: https://github.com/biyachuev/LayoutLight/compare/v1.0...HEAD
+[Unreleased]: https://github.com/biyachuev/LayoutLight/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/biyachuev/LayoutLight/compare/v1.0.1...v1.0.2
 [1.0]: https://github.com/biyachuev/LayoutLight/releases/tag/v1.0

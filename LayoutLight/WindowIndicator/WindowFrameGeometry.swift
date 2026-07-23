@@ -9,7 +9,7 @@ enum WindowFrameGeometry {
         focusedWindow()?.frame
     }
 
-    static func focusedWindow() -> (element: AXUIElement, frame: NSRect)? {
+    static func focusedWindow() -> (element: AXUIElement, frame: NSRect, windowNumber: CGWindowID?)? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         var focusedWindowRef: CFTypeRef?
@@ -19,17 +19,22 @@ enum WindowFrameGeometry {
             return nil
         }
 
-        guard let frame = frame(of: focusedWindow, ownerPID: app.processIdentifier) else { return nil }
-        return (focusedWindow, frame)
+        let number = windowNumber(of: focusedWindow)
+        guard let resolved = frame(of: focusedWindow,
+                                   ownerPID: app.processIdentifier,
+                                   windowNumber: number) else { return nil }
+        return (focusedWindow, resolved.frame, resolved.windowNumber)
     }
 
-    private static func frame(of focusedWindow: AXUIElement, ownerPID: pid_t) -> NSRect? {
-        if let windowNumber = windowNumber(of: focusedWindow),
-           let frame = cgWindowFrame(ownerPID: ownerPID, windowNumber: windowNumber) {
-            return frame
+    private static func frame(of focusedWindow: AXUIElement,
+                              ownerPID: pid_t,
+                              windowNumber: CGWindowID?) -> (frame: NSRect, windowNumber: CGWindowID?)? {
+        if let windowNumber,
+            let frame = cgWindowFrame(ownerPID: ownerPID, windowNumber: windowNumber) {
+            return (frame, windowNumber)
         }
-        if let frame = frontmostCGWindowFrame(ownerPID: ownerPID) {
-            return frame
+        if let window = largestCGWindow(ownerPID: ownerPID) {
+            return window
         }
 
         var positionRef: CFTypeRef?
@@ -49,13 +54,14 @@ enum WindowFrameGeometry {
             return nil
         }
 
-        return AXScreenMath.frameInAppKitCoordinates(
+        let frame = AXScreenMath.frameInAppKitCoordinates(
             axMinX: position.x,
             axTopY: position.y,
             width: size.width,
             height: size.height,
             referencePoint: CGPoint(x: position.x + size.width / 2, y: position.y + size.height / 2)
         )
+        return (frame, nil)
     }
 
     private static func windowNumber(of focusedWindow: AXUIElement) -> CGWindowID? {
@@ -82,19 +88,26 @@ enum WindowFrameGeometry {
         }.first
     }
 
-    private static func frontmostCGWindowFrame(ownerPID: pid_t) -> NSRect? {
+    private static func largestCGWindow(ownerPID: pid_t) -> (frame: NSRect, windowNumber: CGWindowID)? {
         guard let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else {
             return nil
         }
 
-        return windowList.compactMap { info in
+        // Chromium exposes several layer-0 utility surfaces before its actual
+        // browser window. The main window is the largest usable layer-0 window,
+        // not necessarily the first one in front-to-back order.
+        return windowList.compactMap { info -> (frame: NSRect, windowNumber: CGWindowID)? in
             guard (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value == ownerPID,
                   (info[kCGWindowLayer as String] as? NSNumber)?.intValue == 0,
-                  (info[kCGWindowAlpha as String] as? NSNumber)?.doubleValue ?? 0 > 0 else {
+                  (info[kCGWindowAlpha as String] as? NSNumber)?.doubleValue ?? 0 > 0,
+                  let number = (info[kCGWindowNumber as String] as? NSNumber)?.uint32Value,
+                  let frame = cgWindowFrame(from: info) else {
                 return nil
             }
-            return cgWindowFrame(from: info)
-        }.first
+            return (frame, number)
+        }.max { lhs, rhs in
+            lhs.frame.width * lhs.frame.height < rhs.frame.width * rhs.frame.height
+        }
     }
 
     private static func cgWindowFrame(from info: [String: Any]) -> NSRect? {
@@ -126,6 +139,33 @@ enum WindowFrameGeometry {
         case .right:
             return NSRect(x: windowFrame.maxX - thickness, y: windowFrame.minY, width: thickness, height: windowFrame.height)
         }
+    }
+
+    static func hasOwnedWindowAbove(ownerPID: pid_t,
+                                    mainWindowNumber: CGWindowID,
+                                    intersecting indicatorFrame: NSRect) -> Bool {
+        guard let windowList = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements],
+            kCGNullWindowID
+        ) as? [[String: Any]] else {
+            return false
+        }
+
+        // CGWindowList is front-to-back. Only windows encountered before the
+        // focused main window can visually cover its indicator.
+        for info in windowList {
+            guard let number = (info[kCGWindowNumber as String] as? NSNumber)?.uint32Value else {
+                continue
+            }
+            if number == mainWindowNumber { return false }
+            guard (info[kCGWindowOwnerPID as String] as? NSNumber)?.int32Value == ownerPID,
+                  (info[kCGWindowAlpha as String] as? NSNumber)?.doubleValue ?? 0 > 0,
+                  let frame = cgWindowFrame(from: info) else {
+                continue
+            }
+            if frame.intersects(indicatorFrame) { return true }
+        }
+        return false
     }
 
     private static func axValue(_ ref: CFTypeRef) -> AXValue? {

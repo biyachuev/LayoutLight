@@ -1,6 +1,7 @@
 import Cocoa
 import ApplicationServices
 import OSLog
+import Carbon
 
 private let caretLogger = Logger(subsystem: "com.biyachuev.LayoutLight", category: "CaretIndicator")
 
@@ -447,6 +448,10 @@ final class CaretIndicator {
     }
 
     private func updateIndicator() {
+        guard !IsSecureEventInputEnabled() else {
+            hideIndicator()
+            return
+        }
         guard enabled, trusted, let element = focusedElement else {
             hideIndicator()
             return

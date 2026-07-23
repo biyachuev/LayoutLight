@@ -13,7 +13,9 @@ final class FlagOverlayWindow: NSPanel {
         )
         isOpaque = false
         backgroundColor = .clear
-        level = .screenSaver
+        // Keep the HUD above normal windows without covering menus or protected
+        // system authentication UI.
+        level = .floating
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .transient, .ignoresCycle]
         ignoresMouseEvents = true
         hasShadow = true
@@ -82,6 +84,11 @@ final class FlagOverlay {
 
     func show() {
         hideTimer?.invalidate()
+
+        guard !IsSecureEventInputEnabled() else {
+            overlayWindow.orderOut(nil)
+            return
+        }
 
         let russian = isRussianActive()
         overlayView.flag = LanguageIconProvider.icon(isRussian: russian)

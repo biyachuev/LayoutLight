@@ -1,5 +1,6 @@
 import Cocoa
 import ApplicationServices
+import Carbon
 
 final class WindowFrameIndicator {
     private var window: WindowFrameIndicatorWindow
@@ -67,6 +68,10 @@ final class WindowFrameIndicator {
 
     func refresh() {
         guard enabled else { return }
+        guard !IsSecureEventInputEnabled() else {
+            hide()
+            return
+        }
         guard updateColor() else { return }
         guard !isMouseInMenuBarArea else {
             isSuppressedByMenuBar = true
@@ -93,6 +98,23 @@ final class WindowFrameIndicator {
         let settings = WindowFrameIndicatorSettingsStore.shared.settings
         let thickness = CGFloat(settings.thickness)
         view.thickness = thickness
+
+        let indicatorFrame: NSRect
+        switch settings.mode {
+        case .frame:
+            indicatorFrame = frame
+        case .edge:
+            indicatorFrame = WindowFrameGeometry.edgeFrame(for: settings.edge,
+                                                           thickness: thickness,
+                                                           near: frame)
+        }
+        if let windowNumber = focusedWindow.windowNumber,
+           WindowFrameGeometry.hasOwnedWindowAbove(ownerPID: currentPID,
+                                                   mainWindowNumber: windowNumber,
+                                                   intersecting: indicatorFrame) {
+            hide()
+            return
+        }
 
         switch settings.mode {
         case .frame:
